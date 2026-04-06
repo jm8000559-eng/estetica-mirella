@@ -3,7 +3,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', 'Poppins', sans-serif;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
 body {
@@ -13,211 +13,158 @@ body {
 
 /* ========== LANDING PAGE ========== */
 .hero {
-    height: 100vh;
-    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
-    background-size: cover;
-    background-position: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+    position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    text-align: center;
-    padding: 20px;
+    padding: 25px 50px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
 }
 
-.hero h1 {
-    font-size: 4rem;
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    font-size: 2rem;
+}
+
+.logo-text {
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: 1px;
     color: #d4af37;
-    letter-spacing: 2px;
-    margin-bottom: 20px;
 }
 
-.hero p {
-    font-size: 1.2rem;
-    max-width: 600px;
-    margin-bottom: 30px;
+.auth-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid #d4af37;
+    color: #d4af37;
+    padding: 10px 24px;
+    border-radius: 40px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-outline:hover {
+    background: #d4af37;
+    color: #0a0a0a;
 }
 
 .btn-gold {
     background: #d4af37;
     color: #0a0a0a;
-    padding: 12px 30px;
-    border: none;
+    padding: 10px 24px;
     border-radius: 40px;
-    font-weight: bold;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.3s;
     text-decoration: none;
-    display: inline-block;
+    font-weight: 600;
+    transition: all 0.3s;
 }
 
 .btn-gold:hover {
     background: #b8960c;
-    transform: scale(1.05);
+    transform: scale(1.02);
 }
 
-/* ========== DASHBOARD ========== */
-.dashboard-container {
+.hero-content {
+    flex: 1;
     display: flex;
-    min-height: 100vh;
-}
-
-/* Menú lateral */
-.sidebar {
-    width: 280px;
-    background: #111;
-    border-right: 2px solid #d4af37;
-    padding: 30px 20px;
-    position: fixed;
-    height: 100vh;
-    overflow-y: auto;
-}
-
-.sidebar .logo {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     text-align: center;
+    padding: 60px 20px;
+}
+
+.hero-content h1 {
+    font-size: 3.5rem;
+    background: linear-gradient(135deg, #ffffff, #d4af37);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 20px;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    color: #ccc;
+    margin-bottom: 30px;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.btn-primary {
+    background: #d4af37;
+    color: #0a0a0a;
+    padding: 14px 32px;
+    border-radius: 40px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 2px solid #d4af37;
+    color: #d4af37;
+    padding: 14px 32px;
+    border-radius: 40px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Servicios */
+.servicios-section {
+    padding: 80px 20px;
+    background: #111;
+    text-align: center;
+}
+
+.servicios-section h2 {
+    color: #d4af37;
+    font-size: 2.5rem;
     margin-bottom: 40px;
 }
 
-.sidebar .logo h2 {
-    color: #d4af37;
-    font-size: 1.8rem;
-}
-
-.sidebar ul {
-    list-style: none;
-}
-
-.sidebar li {
-    margin-bottom: 20px;
-}
-
-.sidebar a {
-    color: #ddd;
-    text-decoration: none;
-    font-size: 1.1rem;
+.servicios-grid {
     display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px;
-    border-radius: 12px;
-    transition: all 0.2s;
-}
-
-.sidebar a:hover, .sidebar a.active {
-    background: #d4af37;
-    color: #111;
-}
-
-/* Contenido principal */
-.content {
-    margin-left: 280px;
-    padding: 30px;
-    width: calc(100% - 280px);
-}
-
-/* Tarjetas de especialistas */
-.card-especialista {
-    background: #1e1e1e;
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-left: 5px solid #d4af37;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-/* Calendario */
-#calendario {
-    background: #1e1e1e;
-    padding: 20px;
-    border-radius: 20px;
-    margin-top: 20px;
-}
-
-/* Tablas */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background: #1e1e1e;
-    border-radius: 16px;
-    overflow: hidden;
-}
-
-th, td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #333;
-}
-
-th {
-    background: #d4af37;
-    color: #111;
-}
-
-tr:hover {
-    background: #2a2a2a;
-}
-
-/* Botones */
-button {
-    background: #d4af37;
-    color: #111;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: bold;
-    margin-right: 5px;
-}
-
-button:hover {
-    background: #b8960c;
-}
-
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
     justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    gap: 30px;
+    flex-wrap: wrap;
 }
 
-.modal-content {
+.servicio-card {
     background: #1e1e1e;
     padding: 30px;
     border-radius: 20px;
-    width: 400px;
-    max-width: 90%;
-    border: 2px solid #d4af37;
+    width: 280px;
+    border-left: 5px solid #d4af37;
 }
 
-.modal-content input, .modal-content select {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border: none;
-    background: #333;
-    color: white;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 80px;
-        padding: 20px 10px;
-    }
-    .sidebar .logo h2 { font-size: 0; }
-    .sidebar a span { display: none; }
-    .content {
-        margin-left: 80px;
-        width: calc(100% - 80px);
-    }
+footer {
+    text-align: center;
+    padding: 30px;
+    background: #050505;
+    color: #888;
+    font-size: 0.9rem;
 }
