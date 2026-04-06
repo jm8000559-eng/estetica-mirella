@@ -3,32 +3,73 @@ let citas = JSON.parse(localStorage.getItem('citas')) || [];
 let ingresos = JSON.parse(localStorage.getItem('ingresos')) || [];
 
 const especialistas = [
-    { id: 1, nombre: "Manicura y Pedicura", telefono: "0414-7861415", email: "rossanita1378@gmail.com" },
-    { id: 2, nombre: "Cabello", telefono: "", email: "" },
-    { id: 3, nombre: "Cejas, Depilación y Pestañas", telefono: "0424-8525592", email: "MirellaMaestre3@gmail.com" }
+    { id: 1, nombre: "Manicura y Pedicura", telefono: "0414-7861415" },
+    { id: 2, nombre: "Cabello", telefono: "" },
+    { id: 3, nombre: "Cejas, Depilación y Pestañas", telefono: "0424-8525592" }
 ];
 
-// ==================== FUNCIONES AUXILIARES ====================
 function guardarDatos() {
     localStorage.setItem('citas', JSON.stringify(citas));
     localStorage.setItem('ingresos', JSON.stringify(ingresos));
 }
 
-// Enviar recordatorio por WhatsApp (simulado, abre el chat)
-function enviarRecordatorio(cita) {
-    let numero = "";
-    if (cita.especialistaId === 1) numero = "04147861415";
-    else if (cita.especialistaId === 3) numero = "04248525592";
-    if (numero) {
-        const mensaje = `Hola ${cita.cliente}, recordatorio de tu cita de ${cita.servicio} el ${cita.fecha} a las ${cita.hora}. ¡Te esperamos!`;
-        const url = `https://wa.me/58${numero}?text=${encodeURIComponent(mensaje)}`;
-        window.open(url, '_blank');
-    } else {
-        alert("Recordatorio: " + cita.cliente + " - " + cita.fecha + " " + cita.hora);
-    }
+// ==================== MODAL DE DETALLE DE CITA ====================
+function mostrarDetalleCita(index) {
+    const c = citas[index];
+    const estadoColor = {
+        'Atendida': '🟢',
+        'Pendiente': '🟡',
+        'Cancelada': '🔴'
+    };
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h3>📋 Detalle de Cita</h3>
+            <p><strong>Cliente:</strong> ${c.cliente}</p>
+            <p><strong>Servicio:</strong> ${c.servicio}</p>
+            <p><strong>Especialista:</strong> ${especialistas.find(e => e.id === c.especialistaId).nombre}</p>
+            <p><strong>Fecha:</strong> ${c.fecha}</p>
+            <p><strong>Hora:</strong> ${c.hora}</p>
+            <p><strong>Estado actual:</strong> ${estadoColor[c.estado] || '⚪'} ${c.estado}</p>
+            <label><strong>Cambiar estado:</strong></label>
+            <select id="nuevoEstado">
+                <option value="Pendiente" ${c.estado === 'Pendiente' ? 'selected' : ''}>🟡 Pendiente</option>
+                <option value="Atendida" ${c.estado === 'Atendida' ? 'selected' : ''}>🟢 Atendida</option>
+                <option value="Cancelada" ${c.estado === 'Cancelada' ? 'selected' : ''}>🔴 Cancelada</option>
+            </select>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="guardarEstado">Guardar cambios</button>
+                <button id="cerrarModal">Cerrar</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+
+    document.getElementById('guardarEstado').onclick = () => {
+        const nuevo = document.getElementById('nuevoEstado').value;
+        citas[index].estado = nuevo;
+        if (nuevo === 'Atendida') {
+            const monto = prompt("Ingrese el monto cobrado:", "0");
+            if (monto && !isNaN(parseFloat(monto))) {
+                ingresos.push({
+                    especialistaId: c.especialistaId,
+                    monto: parseFloat(monto),
+                    fecha: new Date().toISOString().split('T')[0],
+                    servicio: c.servicio,
+                    cliente: c.cliente
+                });
+            }
+        }
+        guardarDatos();
+        mostrarCitas(); // refresca vista
+        modal.remove();
+    };
+    document.getElementById('cerrarModal').onclick = () => modal.remove();
 }
 
-// ==================== RENDERIZADO DE VISTAS ====================
+// ==================== RENDERIZADO PRINCIPAL ====================
 function mostrarCitas() {
     const main = document.getElementById('mainView');
     main.innerHTML = `
@@ -38,7 +79,7 @@ function mostrarCitas() {
         </div>
         <div id="calendario"></div>
         <div style="margin-top:30px;">
-            <h3>📋 Próximas Citas</h3>
+            <h3>📋 Listado de Citas</h3>
             <table id="tablaCitas">
                 <thead><tr><th>Cliente</th><th>Servicio</th><th>Especialista</th><th>Fecha</th><th>Hora</th><th>Estado</th><th>Acciones</th></tr></thead>
                 <tbody id="listaCitas"></tbody>
@@ -50,55 +91,41 @@ function mostrarCitas() {
     document.getElementById('btnNuevaCita').onclick = mostrarModalCita;
 }
 
-function renderizarCalendario() {
-    const calendarEl = document.getElementById('calendario');
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'es',
-        events: citas.map(c => ({
-            title: `${c.cliente} - ${c.servicio}`,
-            start: `${c.fecha}T${c.hora}`,
-            extendedProps: { cita: c }
-        })),
-        eventClick: (info) => {
-            const cita = info.event.extendedProps.cita;
-            alert(`Cliente: ${cita.cliente}\nServicio: ${cita.servicio}\nHora: ${cita.hora}\nEstado: ${cita.estado}`);
-        }
-    });
-    calendar.render();
-}
-
 function renderizarTablaCitas() {
     const tbody = document.getElementById('listaCitas');
     tbody.innerHTML = '';
-    citas.forEach((c, index) => {
-        const especialista = especialistas.find(e => e.id === c.especialistaId);
+    citas.forEach((c, idx) => {
+        const esp = especialistas.find(e => e.id === c.especialistaId);
+        let estadoIcon = '';
+        if (c.estado === 'Atendida') estadoIcon = '🟢';
+        else if (c.estado === 'Pendiente') estadoIcon = '🟡';
+        else if (c.estado === 'Cancelada') estadoIcon = '🔴';
         tbody.innerHTML += `
             <tr>
                 <td>${c.cliente}</td>
                 <td>${c.servicio}</td>
-                <td>${especialista.nombre}</td>
+                <td>${esp.nombre}</td>
                 <td>${c.fecha}</td>
                 <td>${c.hora}</td>
-                <td>${c.estado}</td>
+                <td>${estadoIcon} ${c.estado}</td>
                 <td>
-                    ${c.estado !== 'Atendida' ? `<button onclick="marcarAtendida(${index})">✅ Atender</button>` : ''}
-                    <button onclick="eliminarCita(${index})">🗑️</button>
-                    <button onclick="enviarRecordatorioCita(${index})">📲 Recordatorio</button>
+                    <button onclick="mostrarDetalleCita(${idx})">📋 Ver</button>
+                    <button onclick="eliminarCita(${idx})">🗑️</button>
                 </td>
             </tr>
         `;
     });
 }
 
+// ==================== AGREGAR CITA ====================
 function mostrarModalCita() {
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.innerHTML = `
         <div class="modal-content">
-            <h3>Nueva Cita</h3>
-            <input type="text" id="cliente" placeholder="Nombre del cliente">
-            <input type="text" id="servicio" placeholder="Servicio">
+            <h3>➕ Nueva Cita</h3>
+            <input id="cliente" placeholder="Nombre del cliente">
+            <input id="servicio" placeholder="Servicio">
             <select id="especialistaId">
                 ${especialistas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('')}
             </select>
@@ -111,7 +138,7 @@ function mostrarModalCita() {
     document.body.appendChild(modal);
     modal.style.display = 'flex';
     document.getElementById('guardarCita').onclick = () => {
-        const nuevaCita = {
+        const nueva = {
             cliente: document.getElementById('cliente').value,
             servicio: document.getElementById('servicio').value,
             especialistaId: parseInt(document.getElementById('especialistaId').value),
@@ -119,11 +146,8 @@ function mostrarModalCita() {
             hora: document.getElementById('hora').value,
             estado: 'Pendiente'
         };
-        if (!nuevaCita.cliente || !nuevaCita.servicio || !nuevaCita.fecha || !nuevaCita.hora) {
-            alert("Complete todos los campos");
-            return;
-        }
-        citas.push(nuevaCita);
+        if (!nueva.cliente || !nueva.servicio || !nueva.fecha || !nueva.hora) return alert("Complete todos los campos");
+        citas.push(nueva);
         guardarDatos();
         mostrarCitas();
         modal.remove();
@@ -131,34 +155,25 @@ function mostrarModalCita() {
     document.getElementById('cerrarModal').onclick = () => modal.remove();
 }
 
-function marcarAtendida(index) {
-    const cita = citas[index];
-    cita.estado = 'Atendida';
-    const monto = prompt(`Ingrese el monto cobrado por el servicio "${cita.servicio}"`, "0");
-    if (monto && !isNaN(parseFloat(monto))) {
-        ingresos.push({
-            especialistaId: cita.especialistaId,
-            monto: parseFloat(monto),
-            fecha: new Date().toISOString().split('T')[0],
-            servicio: cita.servicio,
-            cliente: cita.cliente
-        });
-        guardarDatos();
-    }
-    guardarDatos();
-    mostrarCitas();
-}
-
-function eliminarCita(index) {
-    if (confirm("¿Eliminar esta cita?")) {
-        citas.splice(index, 1);
+function eliminarCita(idx) {
+    if (confirm("¿Eliminar cita?")) {
+        citas.splice(idx, 1);
         guardarDatos();
         mostrarCitas();
     }
 }
 
-function enviarRecordatorioCita(index) {
-    enviarRecordatorio(citas[index]);
+// ==================== CALENDARIO ====================
+function renderizarCalendario() {
+    const calendarEl = document.getElementById('calendario');
+    new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        events: citas.map(c => ({
+            title: `${c.cliente} - ${c.servicio}`,
+            start: `${c.fecha}T${c.hora}`
+        }))
+    }).render();
 }
 
 // ==================== INGRESOS ====================
@@ -166,52 +181,33 @@ function mostrarIngresos() {
     const main = document.getElementById('mainView');
     main.innerHTML = `<h2>💰 Reporte de Ingresos</h2>`;
     especialistas.forEach(esp => {
-        const misIngresos = ingresos.filter(i => i.especialistaId === esp.id);
-        const totalSemanal = misIngresos.filter(i => {
-            const fecha = new Date(i.fecha);
-            const hoy = new Date();
-            const diff = (hoy - fecha) / (1000 * 60 * 60 * 24);
+        const filtrados = ingresos.filter(i => i.especialistaId === esp.id);
+        const semanal = filtrados.filter(i => {
+            const diff = (new Date() - new Date(i.fecha)) / (1000*60*60*24);
             return diff <= 7;
-        }).reduce((acc, i) => acc + i.monto, 0);
-        const totalMensual = misIngresos.filter(i => {
+        }).reduce((a,b) => a + b.monto, 0);
+        const mensual = filtrados.filter(i => {
             const fecha = new Date(i.fecha);
             const hoy = new Date();
             return fecha.getMonth() === hoy.getMonth() && fecha.getFullYear() === hoy.getFullYear();
-        }).reduce((acc, i) => acc + i.monto, 0);
+        }).reduce((a,b) => a + b.monto, 0);
         main.innerHTML += `
             <div class="card-especialista">
                 <h3>${esp.nombre}</h3>
-                <p>💰 Ingresos esta semana: <strong>${totalSemanal.toFixed(2)} $</strong></p>
-                <p>📆 Ingresos este mes: <strong>${totalMensual.toFixed(2)} $</strong></p>
-                <button onclick="verDetalleIngresos(${esp.id})">Ver historial</button>
+                <p>💰 Semana: <strong>${semanal.toFixed(2)} $</strong></p>
+                <p>📆 Mes: <strong>${mensual.toFixed(2)} $</strong></p>
+                <button onclick="alert('Historial:\n' + ${JSON.stringify(filtrados).replace(/"/g, '&quot;')})">Ver histórico</button>
             </div>
         `;
     });
-}
-
-function verDetalleIngresos(especialistaId) {
-    const registros = ingresos.filter(i => i.especialistaId === especialistaId);
-    let html = `<h3>Historial de ingresos</h3><table><tr><th>Fecha</th><th>Cliente</th><th>Servicio</th><th>Monto</th></tr>`;
-    registros.forEach(r => {
-        html += `<tr><td>${r.fecha}</td><td>${r.cliente}</td><td>${r.servicio}</td><td>${r.monto}</td></tr>`;
-    });
-    html += `</table><button onclick="mostrarIngresos()">Volver</button>`;
-    document.getElementById('mainView').innerHTML = html;
 }
 
 function mostrarEspecialistas() {
     const main = document.getElementById('mainView');
-    main.innerHTML = `<h2>👥 Especialistas</h2><div class="especialistas">`;
+    main.innerHTML = `<h2>👥 Especialistas</h2>`;
     especialistas.forEach(esp => {
-        main.innerHTML += `
-            <div class="card-especialista">
-                <h3>${esp.nombre}</h3>
-                <p>📞 ${esp.telefono || 'No registrado'}</p>
-                <p>📧 ${esp.email || 'No registrado'}</p>
-            </div>
-        `;
+        main.innerHTML += `<div class="card-especialista"><h3>${esp.nombre}</h3><p>📞 ${esp.telefono || 'No registrado'}</p></div>`;
     });
-    main.innerHTML += `</div>`;
 }
 
 // ==================== NAVEGACIÓN ====================
@@ -224,12 +220,10 @@ function cambiarVista(vista) {
 document.querySelectorAll('.sidebar a').forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
-        const vista = link.getAttribute('data-view');
-        cambiarVista(vista);
+        cambiarVista(link.getAttribute('data-view'));
         document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
         link.classList.add('active');
     });
 });
 
-// Cargar vista por defecto
 cambiarVista('citas');
