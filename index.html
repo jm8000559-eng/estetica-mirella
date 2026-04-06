@@ -3,35 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estética Mirella Maestre</title>
+    <title>Estética Mirella Maestre | Plataforma Profesional</title>
     <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
     <div class="hero">
-        <h1>ESTÉTICA MIRELLA MAESTRE</h1>
-        <p>Belleza, estilo y profesionalismo en Porlamar. Especialistas en cejas, pestañas, manicura, pedicura y cabello.</p>
-        <a href="dashboard.html" class="btn-gold">Acceder al Sistema</a>
+        <!-- Barra superior con botones -->
+        <div class="top-bar">
+            <div class="logo-area">
+                <span class="logo-icon">💅</span>
+                <span class="logo-text">Estética Mirella Maestre</span>
+            </div>
+            <div class="auth-buttons">
+                <a href="login.html" class="btn-outline">Iniciar Sesión</a>
+                <a href="registro.html" class="btn-gold">Registrarse</a>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="hero-content">
+            <h1>Plataforma Profesional <br> de Control Inteligente</h1>
+            <p>Gestión de citas, ingresos y seguimiento de clientes para tu negocio de belleza.</p>
+            <div class="hero-buttons">
+                <a href="dashboard.html" class="btn-primary">Acceder al Panel</a>
+                <a href="#servicios" class="btn-secondary">Conocer Más</a>
+            </div>
+        </div>
     </div>
-    <div style="text-align: center; padding: 40px; background: #111;">
-        <h2 style="color:#d4af37;">Nuestros Servicios</h2>
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 30px;">
-            <div style="background:#1e1e1e; padding:20px; border-radius:20px; width:250px;">
+
+    <!-- Sección de servicios (para mantener informativo) -->
+    <section id="servicios" class="servicios-section">
+        <h2>Servicios Especializados</h2>
+        <div class="servicios-grid">
+            <div class="servicio-card">
                 <h3>💅 Manicura & Pedicura</h3>
                 <p>Especialista: 0414-7861415</p>
             </div>
-            <div style="background:#1e1e1e; padding:20px; border-radius:20px; width:250px;">
+            <div class="servicio-card">
                 <h3>💇‍♀️ Cabello</h3>
                 <p>Corte, color, tratamientos</p>
             </div>
-            <div style="background:#1e1e1e; padding:20px; border-radius:20px; width:250px;">
+            <div class="servicio-card">
                 <h3>👁️ Cejas, Depilación & Pestañas</h3>
                 <p>Especialista: 0424-8525592</p>
             </div>
         </div>
-        <div style="margin-top: 40px;">
-            <p>📍 Calle Amador Hernández con 4 de Mayo, frente a DIBS (antiguo Discoganga), Porlamar</p>
-            <p>📧 rossanita1378@gmail.com | MirellaMaestre3@gmail.com</p>
-        </div>
-    </div>
+    </section>
+
+    <footer>
+        <p>📍 Calle Amador Hernández con 4 de Mayo, frente a DIBS, Porlamar</p>
+        <p>📧 rossanita1378@gmail.com | MirellaMaestre3@gmail.com</p>
+    </footer>
 </body>
 </html>
