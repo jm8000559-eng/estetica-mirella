@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Estética Mirella</title>
+    <link rel="stylesheet" href="estilos.css">
+    <!-- FullCalendar CDN -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="logo"><h2>✨ Mirella</h2></div>
+        <ul>
+            <li><a href="#" data-view="citas">📅 Citas</a></li>
+            <li><a href="#" data-view="ingresos">💰 Ingresos</a></li>
+            <li><a href="#" data-view="especialistas">👥 Especialistas</a></li>
+        </ul>
+    </aside>
+    <main class="content">
+        <div id="mainView">
+            <!-- El calendario y las vistas se cargarán aquí -->
+        </div>
+    </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
