@@ -2,7 +2,7 @@
 const user = JSON.parse(localStorage.getItem('user'));
 if (!user) window.location.href = 'login.html';
 
-// ==================== DATOS POR ESPECIALISTA ====================
+// ==================== DATOS GLOBALES ====================
 let citas = JSON.parse(localStorage.getItem('citas')) || [];
 let ingresos = JSON.parse(localStorage.getItem('ingresos')) || [];
 
@@ -28,7 +28,34 @@ function filtrarPorRol() {
     };
 }
 
-// ==================== MODAL DE DETALLE ====================
+// ==================== GENERAR MENÚ LATERAL ====================
+function generarMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const rolesPermitidos = ['admin', 'especialista1', 'especialista2', 'especialista3'];
+    if (!rolesPermitidos.includes(user.rol)) {
+        sidebar.style.display = 'none';
+        document.querySelector('.content').style.marginLeft = '0';
+        return;
+    }
+    sidebar.innerHTML = `
+        <div class="logo"><h2>✨ Mirella</h2></div>
+        <ul>
+            <li><a href="#" data-view="citas">📅 Citas</a></li>
+            <li><a href="#" data-view="ingresos">💰 Ingresos</a></li>
+            ${user.rol === 'admin' ? '<li><a href="#" data-view="especialistas">👥 Especialistas</a></li>' : ''}
+        </ul>
+    `;
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            cambiarVista(link.getAttribute('data-view'));
+            document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+            link.classList.add('active');
+        });
+    });
+}
+
+// ==================== MODAL DETALLE CITA ====================
 function mostrarDetalleCita(index) {
     const { citas: misCitas } = filtrarPorRol();
     const c = misCitas[index];
@@ -77,7 +104,7 @@ function mostrarDetalleCita(index) {
     document.getElementById('cerrarModal').onclick = () => modal.remove();
 }
 
-// ==================== RENDERIZADO ====================
+// ==================== RENDERIZAR CITAS ====================
 function mostrarCitas() {
     const { citas: misCitas } = filtrarPorRol();
     const main = document.getElementById('mainView');
@@ -95,7 +122,12 @@ function mostrarCitas() {
             </table>
         </div>
     `;
-    renderizarCalendario(misCitas);
+    const calendarEl = document.getElementById('calendario');
+    new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        events: misCitas.map(c => ({ title: `${c.cliente} - ${c.servicio}`, start: `${c.fecha}T${c.hora}` }))
+    }).render();
     const tbody = document.getElementById('listaCitas');
     tbody.innerHTML = '';
     misCitas.forEach((c, idx) => {
@@ -116,15 +148,6 @@ function mostrarCitas() {
         `;
     });
     document.getElementById('btnNuevaCita').onclick = mostrarModalCita;
-}
-
-function renderizarCalendario(misCitas) {
-    const calendarEl = document.getElementById('calendario');
-    new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'es',
-        events: misCitas.map(c => ({ title: `${c.cliente} - ${c.servicio}`, start: `${c.fecha}T${c.hora}` }))
-    }).render();
 }
 
 function mostrarModalCita() {
@@ -175,44 +198,66 @@ function eliminarCita(idx) {
     }
 }
 
+// ==================== INGRESOS (CON EDICIÓN) ====================
 function mostrarIngresos() {
     const { ingresos: misIngresos } = filtrarPorRol();
     const main = document.getElementById('mainView');
-    main.innerHTML = `<h2>💰 Reporte de Ingresos</h2>`;
-    const grupos = user.rol === 'admin' ? especialistas : especialistas.filter(e => e.rol === user.rol);
-    grupos.forEach(esp => {
-        const filtrados = misIngresos.filter(i => i.especialistaId === esp.id);
-        const semanal = filtrados.filter(i => (new Date() - new Date(i.fecha)) / (1000*60*60*24) <= 7).reduce((a,b) => a + b.monto, 0);
-        const mensual = filtrados.filter(i => new Date(i.fecha).getMonth() === new Date().getMonth()).reduce((a,b) => a + b.monto, 0);
-        main.innerHTML += `<div class="card-especialista"><h3>${esp.nombre}</h3><p>💰 Semana: ${semanal.toFixed(2)} $</p><p>📆 Mes: ${mensual.toFixed(2)} $</p></div>`;
+    main.innerHTML = `
+        <h2>💰 Registro de Ingresos</h2>
+        <table id="tablaIngresos">
+            <thead><tr><th>Fecha</th><th>Cliente</th><th>Servicio</th><th>Monto ($)</th><th>Especialista</th>${user.rol === 'admin' ? '<th>Acciones</th>' : ''}</thead>
+            <tbody id="listaIngresos"></tbody>
+        </table>
+    `;
+    const tbody = document.getElementById('listaIngresos');
+    tbody.innerHTML = '';
+    misIngresos.forEach((ing, idx) => {
+        const esp = especialistas.find(e => e.id === ing.especialistaId);
+        tbody.innerHTML += `
+            <tr>
+                <td>${ing.fecha}</td><td>${ing.cliente}</td><td>${ing.servicio}</td>
+                <td><span id="monto-${idx}">${ing.monto.toFixed(2)}</span></td>
+                <td>${esp.nombre}</td>
+                ${user.rol === 'admin' ? `<td><button onclick="editarIngreso(${idx})">✏️ Editar</button></td>` : ''}
+            </tr>
+        `;
     });
 }
 
+function editarIngreso(idx) {
+    const { ingresos: misIngresos } = filtrarPorRol();
+    const ingreso = misIngresos[idx];
+    const nuevoMonto = prompt("Editar monto:", ingreso.monto);
+    if (nuevoMonto && !isNaN(parseFloat(nuevoMonto))) {
+        const realIdx = ingresos.findIndex(i => i.cliente === ingreso.cliente && i.fecha === ingreso.fecha && i.servicio === ingreso.servicio);
+        if (realIdx !== -1) {
+            ingresos[realIdx].monto = parseFloat(nuevoMonto);
+            guardarDatos();
+            mostrarIngresos();
+        }
+    }
+}
+
+// ==================== ESPECIALISTAS (SOLO ADMIN) ====================
 function mostrarEspecialistas() {
     if (user.rol !== 'admin') {
         alert("Solo el administrador puede ver esta sección.");
         return;
     }
     const main = document.getElementById('mainView');
-    main.innerHTML = `<h2>👥 Gestión de Especialistas</h2>`;
+    main.innerHTML = `<h2>👥 Especialistas</h2>`;
     especialistas.forEach(esp => {
-        main.innerHTML += `<div class="card-especialista"><h3>${esp.nombre}</h3><p>📞 ${esp.telefono || 'No registrado'}</p><button onclick="alert('Editar especialista no implementado aún')">✏️ Editar</button></div>`;
+        main.innerHTML += `<div class="card-especialista"><h3>${esp.nombre}</h3><p>📞 ${esp.telefono || 'No registrado'}</p><button onclick="alert('Editar especialista no implementado')">✏️ Editar</button></div>`;
     });
 }
 
+// ==================== NAVEGACIÓN ====================
 function cambiarVista(vista) {
     if (vista === 'citas') mostrarCitas();
     else if (vista === 'ingresos') mostrarIngresos();
     else if (vista === 'especialistas') mostrarEspecialistas();
 }
 
-document.querySelectorAll('.sidebar a').forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        cambiarVista(link.getAttribute('data-view'));
-        document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
-        link.classList.add('active');
-    });
-});
-
+// ==================== INICIALIZACIÓN ====================
+generarMenu();
 cambiarVista('citas');
