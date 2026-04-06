@@ -3,56 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estética Mirella Maestre | Plataforma Profesional</title>
+    <title>Iniciar Sesión | Estética Mirella</title>
     <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
-    <div class="hero">
-        <!-- Barra superior con botones -->
-        <div class="top-bar">
-            <div class="logo-area">
-                <span class="logo-icon">💅</span>
-                <span class="logo-text">Estética Mirella Maestre</span>
-            </div>
-            <div class="auth-buttons">
-                <a href="login.html" class="btn-outline">Iniciar Sesión</a>
-                <a href="registro.html" class="btn-gold">Registrarse</a>
-            </div>
-        </div>
-
-        <!-- Contenido principal -->
-        <div class="hero-content">
-            <h1>Plataforma Profesional <br> de Control Inteligente</h1>
-            <p>Gestión de citas, ingresos y seguimiento de clientes para tu negocio de belleza.</p>
-            <div class="hero-buttons">
-                <a href="dashboard.html" class="btn-primary">Acceder al Panel</a>
-                <a href="#servicios" class="btn-secondary">Conocer Más</a>
-            </div>
-        </div>
+<div class="login-container">
+    <div class="login-card">
+        <h2>🔐 Acceso al Sistema</h2>
+        <input type="email" id="email" placeholder="Correo electrónico">
+        <input type="password" id="password" placeholder="Contraseña">
+        <button onclick="login()">Ingresar</button>
+        <p class="error-msg" id="errorMsg"></p>
     </div>
+</div>
 
-    <!-- Sección de servicios (para mantener informativo) -->
-    <section id="servicios" class="servicios-section">
-        <h2>Servicios Especializados</h2>
-        <div class="servicios-grid">
-            <div class="servicio-card">
-                <h3>💅 Manicura & Pedicura</h3>
-                <p>Especialista: 0414-7861415</p>
-            </div>
-            <div class="servicio-card">
-                <h3>💇‍♀️ Cabello</h3>
-                <p>Corte, color, tratamientos</p>
-            </div>
-            <div class="servicio-card">
-                <h3>👁️ Cejas, Depilación & Pestañas</h3>
-                <p>Especialista: 0424-8525592</p>
-            </div>
-        </div>
-    </section>
+<script>
+    // Usuarios precargados
+    const usuarios = [
+        { email: "admin@esteticamirella.com", password: "admin123", rol: "admin", nombre: "Administrador" },
+        { email: "manicura@esteticamirella.com", password: "manicura123", rol: "especialista1", nombre: "Especialista Manicura" },
+        { email: "cabello@esteticamirella.com", password: "cabello123", rol: "especialista2", nombre: "Especialista Cabello" },
+        { email: "cejas@esteticamirella.com", password: "cejas123", rol: "especialista3", nombre: "Especialista Cejas" }
+    ];
 
-    <footer>
-        <p>📍 Calle Amador Hernández con 4 de Mayo, frente a DIBS, Porlamar</p>
-        <p>📧 rossanita1378@gmail.com | MirellaMaestre3@gmail.com</p>
-    </footer>
+    function login() {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        const user = usuarios.find(u => u.email === email && u.password === pass);
+        if (user) {
+            localStorage.setItem('user', JSON.stringify(user));
+            window.location.href = 'dashboard.html';
+        } else {
+            document.getElementById('errorMsg').innerText = 'Credenciales incorrectas';
+        }
+    }
+</script>
 </body>
 </html>
